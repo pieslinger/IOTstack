@@ -24,6 +24,7 @@ declare -A cont_array=(
 	[portainer_agent]="Portainer agent"
 	[nodered]="Node-RED"
 	[influxdb]="InfluxDB"
+	[influxdb2]="InfluxDB 2 (requires full 64-bit OS)"
 	[telegraf]="Telegraf (Requires InfluxDB and Mosquitto)"
 	[chronograf]="Chronograf (Requires InfluxDB, Kapacitor optional)"
 	[kapacitor]="Kapacitor (Requires InfluxDB)"
@@ -65,11 +66,12 @@ declare -A cont_array=(
 	# add yours here
 )
 
-declare -a armhf_keys=(
+declare -a keylist=(
 	"portainer-ce"
 	"portainer_agent"
 	"nodered"
 	"influxdb"
+	"influxdb2"
 	"grafana"
 	"mosquitto"
 	"telegraf"
@@ -109,7 +111,6 @@ declare -a armhf_keys=(
 	"home_assistant"
 	# add yours here
 )
-sys_arch=$(uname -m)
 
 #timezones
 timezones() {
@@ -455,14 +456,6 @@ case $mainmenu_selection in
 	message=$'Use the [SPACEBAR] to select which containers you would like to install'
 	entry_options=()
 
-	#check architecture and display appropriate menu
-	if [ $(echo "$sys_arch" | grep -c "arm") ]; then
-		keylist=("${armhf_keys[@]}")
-	else
-		echo "your architecture is not supported yet"
-		exit
-	fi
-
 	#loop through the array of descriptions
 	for index in "${keylist[@]}"; do
 		entry_options+=("$index")
@@ -470,7 +463,7 @@ case $mainmenu_selection in
 
 		#check selection
 		if [ -f ./services/selection.txt ]; then
-			[ $(grep "$index" ./services/selection.txt) ] && entry_options+=("ON") || entry_options+=("OFF")
+			[ $(grep "^$index\$" ./services/selection.txt) ] && entry_options+=("ON") || entry_options+=("OFF")
 		else
 			entry_options+=("OFF")
 		fi
