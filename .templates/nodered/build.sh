@@ -12,7 +12,7 @@ node_selection=$(whiptail --title "Node-RED nodes" --checklist --separate-output
 	"node-red-configurable-ping" " " "ON" \
 	"node-red-node-openweathermap" " " "OFF" \
 	"node-red-contrib-discord" " " "OFF" \
-	"node-red-node-email" " " "on" \
+	"node-red-node-email" " " "OFF" \
 	"node-red-node-google" " " "OFF" \
 	"node-red-node-emoncms" " " "OFF" \
 	"node-red-node-geofence" " " "OFF" \
@@ -21,13 +21,16 @@ node_selection=$(whiptail --title "Node-RED nodes" --checklist --separate-output
 	"node-red-node-smooth" " " "OFF" \
 	"node-red-node-darksky" " " "OFF" \
 	"node-red-node-sqlite" " " "OFF" \
+	"node-red-node-serialport" " " "OFF" \
 	"node-red-contrib-config" " " "OFF" \
 	"node-red-contrib-grove" " " "OFF" \
 	"node-red-contrib-diode" " " "OFF" \
+	"node-red-contrib-sunevents" " " "OFF" \
 	"node-red-contrib-bigtimer" " " "OFF" \
 	"node-red-contrib-esplogin" " " "OFF" \
 	"node-red-contrib-timeout" " " "OFF" \
 	"node-red-contrib-moment" " " "OFF" \
+	"node-red-contrib-telegrambot" " " "OFF" \
 	"node-red-contrib-particle" " " "OFF" \
 	"node-red-contrib-web-worldmap" " " "OFF" \
 	"node-red-contrib-ramp-thermostat" " " "OFF" \
@@ -41,6 +44,13 @@ node_selection=$(whiptail --title "Node-RED nodes" --checklist --separate-output
 	"node-red-contrib-heater-controller" " " "OFF" \
 	"node-red-contrib-deconz" " " "OFF" \
 	"node-red-contrib-generic-ble" " " "OFF" \
+	"node-red-contrib-zigbee2mqtt" " " "OFF" \
+	"node-red-contrib-vcgencmd" " " "OFF" \
+	"node-red-contrib-themes/midnight-red" " " "OFF" \
+	"node-red-contrib-tf-function" " " "OFF" \
+	"node-red-contrib-tf-model" " " "OFF" \
+	"node-red-contrib-post-object-detection" " " "OFF" \
+	"node-red-contrib-bert-tokenizer" " " "OFF" \
 	3>&1 1>&2 2>&3)
 
 ##echo "$check_selection"
@@ -50,12 +60,33 @@ nr_dfile=./services/nodered/Dockerfile
 
 sqliteflag=0
 
-touch $nr_dfile
-echo "FROM nodered/node-red:latest-12" >$nr_dfile
+# initialise Dockerfile ('EOT' syntax avoids bash substitutions)
+cat <<-'EOT' >"$nr_dfile"
+# reference argument - omitted defaults to latest
+ARG DOCKERHUB_TAG=latest
 
-echo "USER root" >>$nr_dfile
-echo "RUN apk update && apk add --no-cache eudev-dev" >>$nr_dfile
-echo "USER node-red" >>$nr_dfile
+# Download base image
+FROM nodered/node-red:${DOCKERHUB_TAG}
+
+# reference argument - omitted defaults to null
+ARG EXTRA_PACKAGES
+ENV EXTRA_PACKAGES=${EXTRA_PACKAGES}
+
+# default user is node-red - need to be root to install packages
+USER root
+
+# install packages
+RUN apk update && apk add --no-cache eudev-dev ${EXTRA_PACKAGES}
+
+# switch back to default user
+USER node-red
+
+# variable not needed inside running container
+ENV EXTRA_PACKAGES=
+
+# add-on nodes follow
+
+EOT
 
 #node red install script inspired from https://tech.scargill.net/the-script/
 echo "RUN for addonnodes in \\" >>$nr_dfile
