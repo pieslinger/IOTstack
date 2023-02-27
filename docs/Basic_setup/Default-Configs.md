@@ -16,7 +16,6 @@ Do note that the ports listed are not all of the ports containers use. They are 
 | changedetectionio | *none*        | *none*     | 5001   | No |
 | chrome_browser    | *none*        | *none*     | 4444   | No |
 | dashmachine    | *none*           | *none*     | 5000   | No |
-| dashmachine    | *none*           | *none*     | 5000   | No |
 | deconz         | *none*           | IOtSt4ckDec0nZ | 8090 | No |
 | diyhue         | *none*           | *none*     | 8070   | No |
 | domoticz       | *none*           | *none*     | 8883   | No |
